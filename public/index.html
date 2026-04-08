@@ -4,12 +4,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>OpenTenders — Global Procurement Intelligence</title>
-    <link rel="stylesheet" href="/styles.css?v=3" />
+    <meta name="description" content="Monitor government procurement tenders from Pakistan, Bangladesh, Kenya, World Bank, and global institutions in real time." />
+    <link rel="stylesheet" href="/styles.css?v=4" />
   </head>
   <body>
     <div id="app">
 
-      <!-- ── User bar ── -->
+      <!-- ── Navigation ── -->
       <nav id="userBar" class="user-bar" hidden>
         <div class="user-bar-brand">
           <span class="ot-nav-icon">⊙</span>
@@ -18,16 +19,16 @@
         <span class="user-avatar" id="userName"></span>
         <div class="user-bar-actions">
           <button id="changePasswordBtn" class="user-mgmt-btn" title="Change password">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             Password
           </button>
-          <button id="manageUsersBtn" class="user-mgmt-btn" hidden title="Manage users">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            Users
+          <button id="manageUsersBtn" class="user-mgmt-btn" hidden title="Admin panel">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Admin
           </button>
           <span class="user-bar-divider"></span>
           <button id="logoutBtn" class="logout-btn" title="Sign out">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
             Sign out
           </button>
         </div>
@@ -46,10 +47,6 @@
             </div>
           </div>
           <div class="hero-actions">
-            <button id="refreshBtn" class="refresh-btn">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
-              Refresh
-            </button>
             <div id="scheduleInfo" class="schedule-info" hidden>
               <span id="scheduleLabel" class="schedule-label"></span>
               <button id="scheduleEditBtn" class="schedule-edit-btn" hidden>Edit</button>
@@ -59,36 +56,40 @@
               <button id="scheduleSaveBtn" class="schedule-save-btn">Save</button>
               <button id="scheduleCancelBtn" class="schedule-cancel-btn">Cancel</button>
             </div>
+            <button id="refreshBtn" class="refresh-btn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+              Refresh
+            </button>
           </div>
         </div>
 
-        <!-- ── Global Stats Bar ── -->
+        <!-- KPI Strip -->
         <div class="kpi-strip">
           <div class="kpi">
-            <span class="kpi-value" id="verifiedCount">0</span>
+            <span class="kpi-value" id="verifiedCount">—</span>
             <span class="kpi-label">Tenders</span>
           </div>
           <span class="kpi-divider"></span>
           <div class="kpi">
-            <span class="kpi-value" id="sourceCount">0</span>
-            <span class="kpi-label">Portals Online</span>
+            <span class="kpi-value" id="sourceCount">—</span>
+            <span class="kpi-label">Portals Active</span>
           </div>
           <span class="kpi-divider"></span>
           <div class="kpi">
-            <span class="kpi-value" id="countryCount">0</span>
+            <span class="kpi-value" id="countryCount">—</span>
             <span class="kpi-label">Countries</span>
           </div>
           <span class="kpi-divider"></span>
           <div class="kpi">
             <span class="kpi-value kpi-value--small" id="lastRefresh">Never</span>
-            <span class="kpi-label">Last scan</span>
+            <span class="kpi-label">Last Scan</span>
           </div>
         </div>
       </header>
 
       <!-- ── Country Selector ── -->
       <section class="country-selector-section">
-        <div class="country-selector-label">Filter by country:</div>
+        <div class="country-selector-label">Countries</div>
         <div id="countrySelector" class="country-selector"></div>
       </section>
 
@@ -96,7 +97,7 @@
       <section class="filters-bar">
         <div class="search-field">
           <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input id="searchInput" type="search" placeholder="Search tenders by title, organization, keyword..." />
+          <input id="searchInput" type="search" placeholder="Search tenders — title, organization, keyword..." autocomplete="off" />
         </div>
         <div class="filter-chips">
           <select id="categoryFilter"><option value="all">All categories</option></select>
@@ -135,19 +136,19 @@
       <section id="teamDashboard" class="team-dashboard" hidden>
         <div class="section-header">
           <div class="section-header-title">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--pink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--pink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
             <h2>Team Dashboard</h2>
           </div>
         </div>
         <div id="teamGrid" class="team-grid"></div>
       </section>
 
-      <!-- ── Message ── -->
+      <!-- ── Toast ── -->
       <section id="messageBar" class="toast hidden"></section>
 
       <!-- ── Results header ── -->
       <div class="results-bar">
-        <p id="resultsHint" class="results-hint">Showing all verified tenders</p>
+        <p id="resultsHint" class="results-hint">Loading…</p>
         <div class="results-bar-right">
           <select id="perPageFilter" class="per-page-select">
             <option value="25">25 / page</option>
@@ -156,7 +157,7 @@
             <option value="all">Show all</option>
           </select>
           <button id="exportBtn" class="export-btn">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Export CSV
           </button>
         </div>
@@ -172,22 +173,11 @@
       <section class="section-block">
         <div class="section-header">
           <div class="section-header-title">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--pink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--pink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
             <h2>Portal Status</h2>
           </div>
         </div>
         <div id="sourcesList" class="sources-grid"></div>
-      </section>
-
-      <!-- ── Activity log ── -->
-      <section class="section-block">
-        <div class="section-header">
-          <div class="section-header-title">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--pink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-            <h2>Activity Log</h2>
-          </div>
-        </div>
-        <div id="activityList" class="activity-list"></div>
       </section>
 
       <!-- ── Footer ── -->
@@ -197,7 +187,7 @@
           <span class="ot-footer-name">OpenTenders</span>
         </div>
         <p>Open source global government procurement intelligence</p>
-        <p class="footer-sub">MIT License &middot; Built by <strong>Sayyam Khan</strong> &middot; <a href="https://github.com/sayyamkhan/opentenders" style="color:var(--text-3)">GitHub</a></p>
+        <p class="footer-sub">MIT License &middot; Built by <strong>Sayyam Khan</strong></p>
       </footer>
 
     </div>
@@ -209,7 +199,7 @@
           <span id="previewTitle" class="preview-title"></span>
           <div class="preview-actions">
             <a id="previewDownload" class="preview-download-btn" href="#" target="_blank" rel="noreferrer noopener">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               Download
             </a>
             <button id="previewClose" class="preview-close-btn">&times;</button>
@@ -219,11 +209,11 @@
       </div>
     </div>
 
-    <!-- ── User Management Modal ── -->
+    <!-- ── Admin Panel Modal ── -->
     <div id="userModal" class="user-modal-overlay" hidden>
       <div class="user-modal">
         <div class="user-modal-header">
-          <h3>User Management</h3>
+          <h3>Admin Panel</h3>
           <button id="userModalClose" class="preview-close-btn">&times;</button>
         </div>
         <div class="user-modal-body">
@@ -241,7 +231,7 @@
           <div class="user-add-form">
             <h4>Add New User</h4>
             <div class="user-add-row">
-              <input id="newUsername" type="text" placeholder="username" class="user-add-input" />
+              <input id="newUsername" type="text" placeholder="username" class="user-add-input" autocomplete="off" />
               <input id="newPassword" type="password" placeholder="password" class="user-add-input" />
               <select id="newRole" class="user-add-select">
                 <option value="member">Member</option>
@@ -251,10 +241,14 @@
             </div>
             <p id="userFormError" class="user-form-error" hidden></p>
           </div>
+          <div class="admin-activity-section">
+            <h4>Activity Log</h4>
+            <div id="activityList" class="activity-list"></div>
+          </div>
         </div>
       </div>
     </div>
 
-    <script type="module" src="/app.js?v=3"></script>
+    <script type="module" src="/app.js?v=4"></script>
   </body>
 </html>

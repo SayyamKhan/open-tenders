@@ -331,20 +331,32 @@ app.get('/api/tenders', async (req, res) => {
   // Extract filter options (cached per refresh cycle)
   if (!_filterOptionsCache) {
     const allNonDupe = allTenders.filter(t => !t.duplicateOf);
+    // Build country counts from all tenders (regardless of current filter)
+    const countryCounts = {};
+    for (const t of allNonDupe) {
+      const c = t.country || (['Federal', 'Punjab', 'Khyber Pakhtunkhwa', 'AJK', 'Sindh', 'Balochistan'].includes(t.province) ? 'Pakistan' : t.province) || 'Pakistan';
+      countryCounts[c] = (countryCounts[c] || 0) + 1;
+    }
+    // Ensure all portals appear even with 0 tenders
+    for (const s of state.sources) {
+      const c = s.country || (s.province ? 'Pakistan' : 'Global');
+      if (!(c in countryCounts)) countryCounts[c] = 0;
+    }
     _filterOptionsCache = {
       categories: [...new Set(allNonDupe.map(t => t.category).filter(Boolean))].sort(),
       provinces: [...new Set([...allNonDupe.map(t => t.province), ...state.sources.map(s => s.province)].filter(Boolean))],
-      sources: [...new Set([...allNonDupe.map(t => t.source), ...state.sources.map(s => s.label)].filter(Boolean))]
+      sources: [...new Set([...allNonDupe.map(t => t.source), ...state.sources.map(s => s.label)].filter(Boolean))],
+      countryCounts
     };
   }
-  const { categories, provinces, sources: sourceLabels } = _filterOptionsCache;
+  const { categories, provinces, sources: sourceLabels, countryCounts } = _filterOptionsCache;
 
   res.json({
     tenders: paginated,
     sources: state.sources,
     meta: state.meta,
     pagination: { page: pageNum, perPage, totalPages, totalFiltered, totalAll },
-    filterOptions: { categories, provinces, sources: sourceLabels }
+    filterOptions: { categories, provinces, sources: sourceLabels, countryCounts }
   });
 });
 

@@ -92,7 +92,6 @@ async function boot() {
   attachEvents();
   await Promise.all([loadUsers(), loadSchedule()]);
   await loadState();
-  await loadActivity();
   await loadTeamDashboard();
   setupDeadlineAlerts();
 }
@@ -276,7 +275,6 @@ async function addNote(tenderId, text) {
     });
     if (!res.ok) { showMessage('Failed to add note', 'error'); return; }
     await loadState();
-    await loadActivity();
   } catch { showMessage('Failed to add note', 'error'); }
 }
 
@@ -377,7 +375,7 @@ async function openUserModal() {
   if (!els.userModal) return;
   els.userModal.hidden = false;
   document.body.style.overflow = 'hidden';
-  await loadAdminUsers();
+  await Promise.all([loadAdminUsers(), loadActivity()]);
 }
 
 function closeUserModal() {
@@ -813,11 +811,14 @@ function renderFromServer() {
   els.sourceCount.textContent = `${onlineCount}/${state.sources.length}`;
   els.lastRefresh.textContent = state.meta.lastRefreshAt ? fmtDateTime(state.meta.lastRefreshAt) : 'Never';
 
-  // Country count
+  // Country count — use server-provided counts, falling back to source list
   const countryCountEl = document.getElementById('countryCount');
   if (countryCountEl) {
-    const countries = new Set(state.sources.map(s => s.country || s.province || 'Pakistan').filter(Boolean));
-    countryCountEl.textContent = countries.size;
+    const cc = state.filterOptions && state.filterOptions.countryCounts;
+    const countries = cc
+      ? Object.keys(cc).filter(c => cc[c] > 0)
+      : [...new Set(state.sources.map(s => s.country || s.province || 'Pakistan').filter(Boolean))];
+    countryCountEl.textContent = countries.length || state.sources.length ? (cc ? Object.keys(cc).length : new Set(state.sources.map(s => s.country || 'Pakistan')).size) : '—';
   }
 
   renderCountrySelector();
@@ -997,19 +998,40 @@ function renderTenders(items) {
       if (pa.requirements && pa.requirements.length) {
         detailCells += `<div class="tc-detail tc-detail--wide"><div class="tc-detail-label">Requirements</div><div class="tc-detail-value"><ul class="tc-req-list">${pa.requirements.map(r => `<li>${esc(r)}</li>`).join('')}</ul></div></div>`;
       }
-      if (pa.relevanceFit || pa.evrimFit) detailCells += detail('Relevance', pa.relevanceFit || pa.evrimFit);
+      if (pa.relevanceFit) detailCells += detail('Relevance', pa.relevanceFit);
     }
 
-    // Compact source label
-    const sourceShort = (t.source || '').replace('Punjab e-Procurement', 'Punjab').replace('PPRA (EPMS)', 'PPRA').replace('PPRA (EPADS v2)', 'EPADS').replace('KPPRA KPK', 'KPPRA').replace('AJK PPRA', 'AJK');
+    // Country flag + compact source label
+    const tCountry = t.country || 'Pakistan';
+    const flag = countryFlag(tCountry);
+    const sourceShort = (t.source || '')
+      .replace('Punjab e-Procurement', 'Punjab')
+      .replace('PPRA (EPMS)', 'PPRA')
+      .replace('PPRA (EPADS v2)', 'EPADS')
+      .replace('KPPRA KPK', 'KPPRA')
+      .replace('AJK PPRA', 'AJK')
+      .replace('Bangladesh CPTU', 'CPTU')
+      .replace('African Development Bank', 'AfDB')
+      .replace('World Bank Procurement', 'World Bank')
+      .replace('Kenya PPRA', 'Kenya PPRA');
+    const regionLabel = t.province || (tCountry !== 'Pakistan' ? tCountry : '');
     const catLabel = t.category && t.category !== 'General' ? t.category : '';
-    const metaParts = [sourceShort, t.province || '', catLabel].filter(Boolean).join(' · ');
+    const metaSuffix = [regionLabel, catLabel].filter(Boolean).join(' · ');
+
+    // Budget chip from PDF analysis
+    const budget = t.pdfAnalysis?.estimatedBudget || '';
+    const budgetHtml = budget
+      ? `<span class="tc-budget"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>${esc(budget)}</span>`
+      : '';
 
     return `<article class="tender-card tender-card--${urgency}${t.assignedTo ? ' tender-card--claimed' : ''}${t.bookmarked ? ' tender-card--bookmarked' : ''}">
       <div class="tc-main">
         <div class="tc-body">
           <div class="tc-header-row">
-            <span class="tc-meta-line">${esc(metaParts)}</span>
+            <span class="tc-meta-line">
+              <span class="tc-flag">${flag}</span>
+              ${esc(sourceShort)}${metaSuffix ? ' · ' + esc(metaSuffix) : ''}
+            </span>
             <div class="tc-deadline-inline ${urgency}">
               <span class="dl-date">${dayNum} ${monthStr}${t.closingTime ? ' · ' + esc(t.closingTime) : ''}</span>
               <span class="dl-left">${esc(urgLabel)}</span>
@@ -1017,6 +1039,7 @@ function renderTenders(items) {
           </div>
           <h3 class="tc-title">${t.isNew ? '<span class="new-badge">NEW</span>' : ''}${esc(t.title)}</h3>
           <p class="tc-org">${esc(t.organization)}${t.city ? ' · ' + esc(t.city) : ''}${ref ? ' · <code>' + esc(ref) + '</code>' : ''}</p>
+          ${budgetHtml}
           ${t.aiSummary ? `<p class="tc-ai-summary">${esc(t.aiSummary)}</p>` : (t.description ? `<p class="tc-description">${esc(t.description)}</p>` : '')}
         </div>
         <div class="tc-side">
@@ -1076,35 +1099,42 @@ function renderSources() {
 
 let activeCountries = new Set(); // empty = show all
 
+const COUNTRY_FLAGS = {
+  'Pakistan': '🇵🇰', 'Bangladesh': '🇧🇩', 'Kenya': '🇰🇪', 'Global': '🌍',
+  'Africa (Multi)': '🌍', 'Africa': '🌍', 'World Bank': '🌍'
+};
+
+function countryFlag(c) { return COUNTRY_FLAGS[c] || '🌐'; }
+
 function renderCountrySelector() {
   const container = document.getElementById('countrySelector');
   if (!container) return;
 
-  // Build country → tender count map from current tenders
-  const countryTenderMap = {};
-  for (const t of state.tenders) {
-    const c = t.country || (t.province && !['Federal', 'Punjab', 'Khyber Pakhtunkhwa', 'AJK', 'Sindh', 'Balochistan'].includes(t.province) ? t.province : 'Pakistan');
-    countryTenderMap[c] = (countryTenderMap[c] || 0) + 1;
-  }
+  // Use server-provided counts (from ALL tenders, not just current page)
+  const countryTenderMap = (state.filterOptions && state.filterOptions.countryCounts) ? { ...state.filterOptions.countryCounts } : {};
 
-  // Also build from sources even if no tenders yet
+  // Fallback: include sources so portals always appear even before first refresh
   for (const s of state.sources) {
     const c = s.country || (s.province ? 'Pakistan' : 'Global');
-    if (!countryTenderMap[c]) countryTenderMap[c] = 0;
+    if (!(c in countryTenderMap)) countryTenderMap[c] = 0;
   }
-
-  const COUNTRY_FLAGS = {
-    'Pakistan': '🇵🇰', 'Bangladesh': '🇧🇩', 'Kenya': '🇰🇪', 'Global': '🌍',
-    'Africa (Multi)': '🌍', 'Africa': '🌍'
-  };
 
   const countries = Object.keys(countryTenderMap).sort();
   if (!countries.length) { container.innerHTML = ''; return; }
 
-  container.innerHTML = countries.map(country => {
-    const flag = COUNTRY_FLAGS[country] || '🌐';
+  const totalAll = Object.values(countryTenderMap).reduce((a, b) => a + b, 0);
+  const isShowingAll = activeCountries.size === 0;
+
+  // "All" pill first, then individual country pills
+  const allPill = `<button class="country-pill country-pill--all ${isShowingAll ? 'active' : ''}" data-country="__all__">
+    <span class="country-pill-flag">🌐</span>
+    <span>All</span>
+    <span class="country-pill-count">${totalAll}</span>
+  </button>`;
+
+  const countryPills = countries.map(country => {
+    const flag = countryFlag(country);
     const count = countryTenderMap[country] || 0;
-    const active = activeCountries.has(country) || activeCountries.size === 0;
     return `<button class="country-pill ${activeCountries.has(country) ? 'active' : ''}" data-country="${esc(country)}">
       <span class="country-pill-flag">${flag}</span>
       <span>${esc(country)}</span>
@@ -1112,10 +1142,14 @@ function renderCountrySelector() {
     </button>`;
   }).join('');
 
+  container.innerHTML = allPill + countryPills;
+
   container.querySelectorAll('.country-pill').forEach(pill => {
     pill.addEventListener('click', () => {
       const country = pill.dataset.country;
-      if (activeCountries.has(country)) {
+      if (country === '__all__') {
+        activeCountries.clear();
+      } else if (activeCountries.has(country)) {
         activeCountries.delete(country);
       } else {
         activeCountries.add(country);

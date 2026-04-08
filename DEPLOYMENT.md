@@ -28,7 +28,7 @@ No external API keys required — everything runs locally.
 ### 1. Copy the project folder to your server
 
 ```bash
-scp -r evrim-tender-radar-deploy/ user@your-server:/opt/tender-radar/
+scp -r opentenders/ user@your-server:/opt/tender-radar/
 ```
 
 ### 2. Install Node.js dependencies
