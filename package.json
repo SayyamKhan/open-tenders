@@ -1,0 +1,24 @@
+{
+  "name": "opentenders",
+  "version": "2.0.0",
+  "description": "Open source global government procurement intelligence",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node --max-old-space-size=384 server.js",
+    "dev": "node --watch server.js",
+    "mcp": "node lib/mcp-server.js",
+    "lint:syntax": "node --check server.js && node --check lib/config.js && node --check lib/storage.js && node --check lib/parsers.js && node --check lib/sources.js && node --check lib/refresh.js && node --check lib/pdf-utils.js && node --check lib/auth.js && node --check public/app.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.52.0",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "compression": "^1.8.0",
+    "express": "^4.21.2",
+    "node-cron": "^3.0.3",
+    "pdf-parse": "^1.1.1",
+    "playwright": "^1.52.0",
+    "playwright-extra": "^4.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2"
+  }
+}

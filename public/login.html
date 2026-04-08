@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign In — OpenTenders</title>
+    <link rel="stylesheet" href="/styles.css?v=3" />
+  </head>
+  <body>
+    <div class="login-page">
+      <div class="login-card">
+        <div class="hero-logo" style="margin-bottom:32px">
+          <div class="ot-wordmark-login">
+            <span class="ot-logo-icon">⊙</span>
+            <span class="ot-logo-text">OpenTenders</span>
+          </div>
+          <div class="logo-tagline">
+            <span>global procurement intelligence</span>
+          </div>
+        </div>
+        <h2 class="login-heading">Sign in</h2>
+        <p class="login-sub">Access your procurement dashboard</p>
+        <form id="loginForm" autocomplete="on">
+          <div class="login-field">
+            <label for="username">Username</label>
+            <input id="username" name="username" type="text" autocomplete="username" required autofocus />
+          </div>
+          <div class="login-field">
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password" autocomplete="current-password" required />
+          </div>
+          <div id="loginError" class="login-error" hidden></div>
+          <button type="submit" class="login-btn">Sign in</button>
+        </form>
+      </div>
+      <p class="login-footer">OpenTenders &middot; MIT License &middot; <a href="https://github.com/sayyamkhan/opentenders" style="color:var(--text-3)">GitHub</a></p>
+    </div>
+    <script src="/login.js"></script>
+  </body>
+</html>
